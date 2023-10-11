@@ -1,0 +1,17 @@
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: helloworld
+  namespace: my-awesome-project
+spec:
+  action: ALLOW
+  rules:
+  - to:
+    - operation:
+        methods:
+        - GET
+  - when:
+    - key: request.regex.headers[x-forwarded-client-cert]
+      values:
+      - .*cluster-2.local/ns/istio-system/sa/cluster-1-ingress-service-account*.*
