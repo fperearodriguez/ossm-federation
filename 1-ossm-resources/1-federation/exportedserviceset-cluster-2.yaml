@@ -1,0 +1,11 @@
+kind: ExportedServiceSet
+apiVersion: federation.maistra.io/v1
+metadata:
+  name: cluster-1
+  namespace: istio-system
+spec:
+  exportRules:
+  - type: NameSelector
+    nameSelector:
+      namespace: my-awesome-project
+      name: "*"

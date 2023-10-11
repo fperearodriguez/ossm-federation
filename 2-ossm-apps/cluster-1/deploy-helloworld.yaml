@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: helloworld
+  name: helloworld
+  namespace: my-awesome-project
+spec:
+  selector:
+    matchLabels:
+      app: helloworld
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+      labels:
+        app: helloworld
+    spec:
+      containers:
+      - image: docker.io/istio/examples-helloworld-v1
+        imagePullPolicy: IfNotPresent
+        name: helloworld
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+      restartPolicy: Always
+      serviceAccountName: helloworld
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: helloworld
+    service: helloworld
+  name: helloworld
+  namespace: my-awesome-project
+spec:
+  internalTrafficPolicy: Cluster
+  ports:
+  - name: http
+    port: 5000
+  selector:
+    app: helloworld
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: helloworld
+  namespace: my-awesome-project

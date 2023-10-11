@@ -1,0 +1,22 @@
+kind: ServiceMeshPeer
+apiVersion: federation.maistra.io/v1
+metadata:
+  name: cluster-1
+  namespace: istio-system
+spec:
+  remote:
+    addresses:
+    - a684e3735afcd43d2ba40d95ba1040a8-2bd52f6bdf823f59.elb.eu-central-1.amazonaws.com
+    discoveryPort: 8188
+    servicePort: 15443
+  gateways:
+    ingress:
+      name: cluster-1-ingress # This is the name of the gateway in the remote cluster
+    egress:
+      name: cluster-1-egress # This is the name of the gateway in the remote cluster
+  security:
+    trustDomain: cluster-1.local
+    clientID: cluster-1.local/ns/istio-system/sa/cluster-2-egress-service-account
+    certificateChain:
+      kind: ConfigMap
+      name: cluster-1-ca-root-cert

@@ -1,0 +1,20 @@
+kind: ImportedServiceSet
+apiVersion: federation.maistra.io/v1
+metadata:
+  name: cluster-2 #name of mesh that exported the service
+  namespace: istio-system #mesh namespace that service is being imported into
+spec:
+  importRules:
+  - type: NameSelector
+    importAsLocal: true # import as local service, an alias name and namespace must be provided
+    nameSelector:
+      namespace: my-awesome-project
+      name: helloworld-canary
+      alias:
+        namespace: my-awesome-project
+        name: helloworld-canary
+  - type: NameSelector # import the all services in the my-awesome-project namespace
+    importAsLocal: false
+    nameSelector:
+      namespace: my-awesome-project
+      name: "*"

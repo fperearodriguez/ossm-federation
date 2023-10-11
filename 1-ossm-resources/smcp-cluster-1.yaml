@@ -1,0 +1,95 @@
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: basic
+  namespace: istio-system
+spec:
+  runtime:
+    defaults:
+      container:
+        imagePullPolicy: Always
+  addons:
+    grafana:
+      enabled: true
+    jaeger:
+      name: jaeger
+      install:
+        storage:
+          type: Memory # or Elasticsearch
+          memory:
+            maxTraces: 100000
+        ingress: # jaeger ingress configuration
+          enabled: true
+    kiali:
+      enabled: true
+      name: kiali
+    prometheus:
+      enabled: true
+  gateways:
+    additionalEgress:
+      cluster-2-egress:
+        enabled: true
+        requestedNetworkView:
+        - network-cluster-2
+        routerMode: sni-dnat
+        service:
+          metadata:
+            labels:
+              # to prevent cluster-2-egress's service from including default egress pods
+              federation.maistra.io/egress-for: cluster-2
+          ports:
+          # required for sending service requests to cluster-2
+          - port: 15443
+            name: tls
+          # required for sending discovery requests to cluster-2
+          - port: 8188
+            name: http-discovery
+    additionalIngress:
+      cluster-2-ingress:
+        enabled: true
+        routerMode: sni-dnat
+        service:
+          type: LoadBalancer
+          metadata:
+            annotations:
+              service.beta.kubernetes.io/aws-load-balancer-type: nlb
+            labels:
+              # to prevent cluster-2-ingress's service from including default ingress pods
+              federation.maistra.io/ingress-for: cluster-2
+          ports:
+          # required for handling service requests from cluster-2
+          - port: 15443
+            name: tls
+          # required for handing discovery requests from cluster-2
+          - port: 8188
+            name: https-discovery
+    egress:
+      enabled: true
+      namespace: istio-system
+    ingress:
+      enabled: true
+      namespace: istio-system
+    openshiftRoute:
+      enabled: true
+  general:
+    logging:
+      componentLevels:
+        default: info
+    validationMessages: true
+  proxy:
+    logging:
+      level: info
+  security:
+    controlPlane:
+      mtls: true
+    dataPlane:
+      automtls: true
+      mtls: true
+    trust:
+      domain: cluster-1.local
+  telemetry:
+    type: Istiod
+  tracing:
+    sampling: 10000
+    type: Jaeger
+  version: v2.4
